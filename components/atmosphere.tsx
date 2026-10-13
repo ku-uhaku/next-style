@@ -1,4 +1,4 @@
-git remote add origin https://github.com/ku-uhaku/next-style.git"use client";
+"use client";
 
 import { useEffect, useRef } from "react";
 
