@@ -1,26 +1,1494 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   ORA — design tokens
+   A dark studio stage. Only the light moves.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Ground */
+  --ink: #150f23;
+  --ink-deep: #0c0816;
+  --velvet: #2b1b3d;
+  --velvet-soft: #3a2550;
+
+  /* Type */
+  --bone: #f2e8df;
+  --bone-muted: #a99fb4;
+  /* 5.2:1 on --ink; the previous value failed AA for small text */
+  --bone-faint: #8b82a0;
+
+  /* Light */
+  --gold: #f2b457;
+  --gold-pale: #fff4dc;
+  --rose: #d9578c;
+  --blue: #3e4ba0;
+
+  /* Type scale */
+  --t-micro: 0.8125rem;
+  --t-small: 0.9375rem;
+  --t-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --t-lead: clamp(1.125rem, 1.04rem + 0.42vw, 1.4rem);
+  --t-d3: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem);
+  --t-d2: clamp(2.25rem, 1.6rem + 3.2vw, 4.5rem);
+  --t-d1: clamp(2.75rem, 1.35rem + 7vw, 8rem);
+  --t-hour: clamp(3.5rem, 1rem + 13vw, 13rem);
+
+  /* Measure, rhythm */
+  --measure: 56ch;
+  --pad-x: clamp(1.25rem, 5vw, 6rem);
+  --pad-y: clamp(4.5rem, 11vh, 9rem);
+  --shell: 1400px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 0.84, 0.28, 1);
+  --ease-soft: cubic-bezier(0.4, 0.1, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ==========================================================================
+   Base
+   ========================================================================== */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background-color: var(--ink);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--ink);
+  color: var(--bone);
+  font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--t-body);
+  line-height: 1.62;
+  font-synthesis: none;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  text-wrap: pretty;
+  margin: 0;
+}
+
+h2 {
+  font-size: var(--t-d3);
+}
+
+h2 + .lead {
+  margin-top: 0.9rem;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Primitives
+   ========================================================================== */
+
+.u-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+.stage {
+  position: relative;
+  padding-block: var(--pad-y);
+}
+
+/* Small supporting text. Sentence case — never a tracked-out caps label. */
+.note {
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  color: var(--bone-muted);
+}
+
+.lead {
+  font-size: var(--t-lead);
+  line-height: 1.5;
+  max-width: var(--measure);
+  color: var(--bone-muted);
+}
+
+.body {
+  max-width: var(--measure);
+  color: var(--bone-muted);
+}
+
+.skip {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 100;
+  translate: -50% -150%;
+  padding: 0.75rem 1.25rem;
+  background: var(--bone);
+  color: var(--ink);
+  font-size: var(--t-small);
+  border-radius: 0 0 0.5rem 0.5rem;
+  transition: translate 0.2s var(--ease-out);
+}
+
+.skip:focus {
+  translate: -50% 0;
+}
+
+/* Mask used by every line reveal on the site. */
+.mask {
+  display: block;
+  overflow: clip;
+}
+
+.mask > span {
+  display: block;
+}
+
+/* Buttons --------------------------------------------------------------- */
+
+.btn {
+  --btn-fg: var(--ink);
+  --btn-bg: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.6rem;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--t-small);
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 1px 0 rgba(255, 244, 220, 0.5) inset,
+    0 0.6rem 1.4rem -0.5rem rgba(242, 180, 87, 0.5),
+    0 1.6rem 3rem -1rem rgba(12, 8, 22, 0.8);
+  transition:
+    scale 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out),
+    background-color 0.3s var(--ease-out);
+}
+
+.btn:hover {
+  scale: 1.03;
+  box-shadow:
+    0 1px 0 rgba(255, 244, 220, 0.6) inset,
+    0 0.8rem 2rem -0.4rem rgba(242, 180, 87, 0.65),
+    0 2rem 3.5rem -1rem rgba(12, 8, 22, 0.9);
+}
+
+.btn:active {
+  scale: 0.99;
+}
+
+.btn--quiet {
+  --btn-bg: transparent;
+  --btn-fg: var(--bone);
+  box-shadow: 0 0 0 1px rgba(242, 232, 223, 0.22) inset;
+}
+
+.btn--quiet:hover {
+  --btn-bg: rgba(242, 232, 223, 0.07);
+  box-shadow: 0 0 0 1px rgba(242, 232, 223, 0.4) inset;
+  scale: 1.03;
+}
+
+/* ==========================================================================
+   Atmosphere — fixed lighting rig behind everything
+   ========================================================================== */
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: clip;
+}
+
+.atmosphere__field {
+  position: absolute;
+  inset: -10%;
+  opacity: 0;
+  will-change: opacity;
+}
+
+.atmosphere__field[data-mood="predawn"] {
+  opacity: 1;
+  background:
+    radial-gradient(
+      60% 55% at 18% 88%,
+      rgba(62, 75, 160, 0.5) 0%,
+      rgba(62, 75, 160, 0) 70%
+    ),
+    radial-gradient(
+      40% 40% at 72% 12%,
+      rgba(217, 87, 140, 0.16) 0%,
+      rgba(217, 87, 140, 0) 70%
+    );
+}
+
+.atmosphere__field[data-mood="morning"] {
+  background:
+    radial-gradient(
+      55% 50% at 80% 30%,
+      rgba(242, 180, 87, 0.4) 0%,
+      rgba(242, 180, 87, 0) 72%
+    ),
+    radial-gradient(
+      50% 50% at 20% 70%,
+      rgba(62, 75, 160, 0.3) 0%,
+      rgba(62, 75, 160, 0) 70%
+    );
+}
+
+.atmosphere__field[data-mood="midday"] {
+  background:
+    radial-gradient(
+      45% 45% at 50% 6%,
+      rgba(255, 244, 220, 0.5) 0%,
+      rgba(255, 244, 220, 0) 68%
+    ),
+    radial-gradient(
+      70% 60% at 50% 40%,
+      rgba(242, 180, 87, 0.22) 0%,
+      rgba(242, 180, 87, 0) 72%
+    );
+}
+
+.atmosphere__field[data-mood="dusk"] {
+  background:
+    radial-gradient(
+      70% 60% at 78% 82%,
+      rgba(217, 87, 140, 0.45) 0%,
+      rgba(217, 87, 140, 0) 70%
+    ),
+    radial-gradient(
+      45% 45% at 24% 24%,
+      rgba(242, 180, 87, 0.2) 0%,
+      rgba(242, 180, 87, 0) 70%
+    );
+}
+
+.atmosphere__field[data-mood="night"] {
+  background:
+    radial-gradient(
+      40% 38% at 50% 10%,
+      rgba(173, 186, 255, 0.22) 0%,
+      rgba(173, 186, 255, 0) 70%
+    ),
+    radial-gradient(
+      80% 70% at 50% 100%,
+      rgba(43, 27, 61, 0.9) 0%,
+      rgba(43, 27, 61, 0) 70%
+    );
+}
+
+/* Ambient bloom that drifts across the whole page */
+.atmosphere__bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(140vmin, 1400px);
+  aspect-ratio: 1;
+  margin: -70vmin 0 0 -70vmin;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(242, 180, 87, 0.22) 0%,
+    rgba(217, 87, 140, 0.12) 38%,
+    rgba(21, 15, 35, 0) 68%
+  );
+  will-change: transform;
+}
+
+/* Film grain. Static, cheap, keeps the gradients from banding. */
+.atmosphere__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* Everything that scrolls sits above the rig */
+#smooth-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.1rem var(--pad-x);
+  background: linear-gradient(
+    to bottom,
+    rgba(12, 8, 22, 0.72) 0%,
+    rgba(12, 8, 22, 0) 100%
+  );
+  backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+
+.header__mark {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  padding-right: 0.1em;
+}
+
+.header__nav {
+  display: flex;
+  gap: 1.75rem;
+  margin-left: auto;
+  font-size: var(--t-small);
+  color: var(--bone-muted);
+}
+
+.header__link {
+  position: relative;
+  padding-block: 0.25rem;
+  transition: color 0.25s var(--ease-out);
+}
+
+.header__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--gold);
+  scale: 0 1;
+  transform-origin: left;
+  transition: scale 0.35s var(--ease-out);
+}
+
+.header__link:hover {
+  color: var(--bone);
+}
+
+.header__link:hover::after {
+  scale: 1 1;
+}
+
+/* Scroll position, told as the time of day */
+.header__clock {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  color: var(--bone-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.header__dial {
+  position: relative;
+  width: 2.75rem;
+  height: 1px;
+  background: rgba(242, 232, 223, 0.2);
+}
+
+.header__dial span {
+  position: absolute;
+  inset: 0;
+  background: var(--gold);
+  transform-origin: left;
+  scale: 0 1;
+  will-change: transform;
+}
+
+.header__menu {
+  display: none;
+  margin-left: auto;
+  font-size: var(--t-small);
+  color: var(--bone-muted);
+}
+
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  padding: var(--pad-x);
+  background: rgba(12, 8, 22, 0.96);
+  backdrop-filter: blur(10px);
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menu__link {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: var(--t-d3);
+  padding-block: 0.3rem;
+}
+
+.menu__close {
+  position: absolute;
+  top: 1.1rem;
+  right: var(--pad-x);
+  font-size: var(--t-small);
+  color: var(--bone-muted);
+}
+
+@media (max-width: 52rem) {
+  .header__nav,
+  .header__clock {
+    display: none;
+  }
+
+  .header__menu {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-content: end;
+  padding-block: clamp(7rem, 16vh, 11rem) clamp(6.5rem, 16vh, 9.5rem);
+  overflow: clip;
+}
+
+/* Wrapper carries the pointer offset, the disc itself carries the scroll. */
+.hero__sunWrap {
+  position: absolute;
+  top: 43%;
+  right: 7vw;
+  width: clamp(14rem, 31vw, 28rem);
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  will-change: transform;
+}
+
+.hero__sunScroll {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.hero__sun {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 36% 30%,
+    var(--gold-pale) 0%,
+    var(--gold) 26%,
+    var(--rose) 58%,
+    #92306b 82%,
+    #4a1f52 100%
+  );
+  box-shadow:
+    0 0 4rem rgba(242, 180, 87, 0.35),
+    0 0 11rem rgba(217, 87, 140, 0.32),
+    inset -1.2rem -2rem 4rem rgba(12, 8, 22, 0.45);
+}
+
+.hero__inner {
+  position: relative;
+  display: grid;
+  gap: clamp(2rem, 5vh, 3.5rem);
+}
+
+.hero__title {
+  font-size: var(--t-d1);
+  max-width: 9ch;
+  margin: 0;
+}
+
+.hero__title .line {
+  display: block;
+}
+
+.hero__foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.hero__copy {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.hero__hour {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 232, 223, 0.38);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hero__cue {
+  position: absolute;
+  left: var(--pad-x);
+  bottom: clamp(1.25rem, 3.5vh, 2.25rem);
+  display: grid;
+  justify-items: start;
+  gap: 0.6rem;
+  font-size: var(--t-micro);
+  color: var(--bone-faint);
+}
+
+.hero__cue i {
+  display: block;
+  width: 1px;
+  height: 2.25rem;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+}
+
+@media (max-width: 52rem) {
+  .hero__sunWrap {
+    top: 21%;
+    right: -16vw;
+    width: 18rem;
+  }
+
+  .hero__foot {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__hour {
+    justify-self: end;
+  }
+
+  .hero__cue {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Manifesto — words lit one at a time by the passing light
+   ========================================================================== */
+
+.manifesto {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding-inline: var(--pad-x);
+  overflow: clip;
+}
+
+.manifesto__light {
+  position: absolute;
+  left: 50%;
+  top: 72%;
+  width: min(120vmin, 60rem);
+  aspect-ratio: 1;
+  margin-left: -60vmin;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(242, 180, 87, 0.3) 0%,
+    rgba(217, 87, 140, 0.16) 40%,
+    rgba(21, 15, 35, 0) 70%
+  );
+  will-change: transform;
+}
+
+.manifesto__inner {
+  position: relative;
+  max-width: min(92vw, 40rem);
+  margin-inline: auto;
+}
+
+.manifesto__statement {
+  font-size: clamp(1.5rem, 1rem + 2.1vw, 2.9rem);
+  line-height: 1.14;
+}
+
+.manifesto__statement .word {
+  opacity: 0.16;
+  will-change: opacity;
+}
+
+.manifesto__coda {
+  margin-top: clamp(2rem, 5vh, 3.5rem);
+  font-size: var(--t-lead);
+  color: var(--bone-muted);
+  max-width: 34ch;
+  margin-inline: auto;
+}
+
+/* ==========================================================================
+   Hours — vertical scroll drives a horizontal day
+   ========================================================================== */
+
+.hours {
+  position: relative;
+}
+
+/* Clip the track here, not on the section, so pinning stays untouched. */
+.hours__viewport {
+  overflow: clip;
+}
+
+.hours__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  margin-bottom: clamp(2.5rem, 7vh, 4rem);
+  padding-inline: var(--pad-x);
+}
+
+.hours__title {
+  font-size: var(--t-d3);
+}
+
+.hours__track {
+  display: grid;
+  gap: clamp(4rem, 12vh, 7rem);
+}
+
+/* Stacked by default; the horizontal day is opted into further down. */
+.hours__panel {
+  --tint: var(--gold);
+  position: relative;
+  display: grid;
+  align-items: center;
+  gap: 2.5rem;
+  padding-inline: var(--pad-x);
+}
+
+.hours__glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(90vmin, 46rem);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--tint) 58%, transparent) 0%,
+    color-mix(in oklab, var(--tint) 16%, transparent) 40%,
+    rgba(21, 15, 35, 0) 68%
+  );
+  will-change: transform;
+}
+
+.hours__text {
+  position: relative;
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  max-width: 34rem;
+}
+
+.hours__hour {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: var(--t-hour);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+  will-change: clip-path;
+}
+
+.hours__name {
+  font-size: var(--t-d3);
+  color: var(--tint);
+}
+
+.hours__spec {
+  display: flex;
+  gap: 2rem;
+  margin-top: 0.4rem;
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  color: var(--bone-faint);
+}
+
+.hours__spec b {
+  display: block;
+  font-weight: 400;
+  font-size: var(--t-small);
+  letter-spacing: 0;
+  color: var(--bone-muted);
+}
+
+/* Product vessel, drawn in CSS. No photography in this build. */
+.hours__object {
+  position: relative;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+.vessel {
+  position: relative;
+  width: clamp(7rem, 15vw, 11.5rem);
+  aspect-ratio: 0.62;
+  border-radius: 1.6rem 1.6rem 1.1rem 1.1rem;
+  background:
+    linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.2) 14%,
+      rgba(255, 255, 255, 0.03) 32%,
+      rgba(12, 8, 22, 0.18) 68%,
+      rgba(255, 255, 255, 0.12) 100%
+    ),
+    /* liquid, with a meniscus a quarter of the way down */
+      linear-gradient(
+        to bottom,
+        rgba(21, 15, 35, 0.32) 0%,
+        rgba(21, 15, 35, 0.32) 25.5%,
+        color-mix(in oklab, var(--tint) 34%, #150f23) 26%,
+        color-mix(in oklab, var(--tint) 54%, #150f23) 44%,
+        color-mix(in oklab, var(--tint) 74%, #150f23) 100%
+      );
+  box-shadow:
+    0 0 0 1px rgba(242, 232, 223, 0.16) inset,
+    -0.7rem 0 1.3rem -0.7rem rgba(255, 255, 255, 0.22) inset,
+    0.6rem 0 1.1rem -0.6rem rgba(255, 255, 255, 0.14) inset,
+    0 2rem 3rem -1.5rem rgba(12, 8, 22, 0.9),
+    0 0 4.5rem color-mix(in oklab, var(--tint) 32%, transparent);
+}
+
+.vessel::before {
+  /* specular highlight */
+  content: "";
+  position: absolute;
+  left: 13%;
+  top: 7%;
+  width: 9%;
+  height: 56%;
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 244, 220, 0.5),
+    rgba(255, 244, 220, 0)
+  );
+  filter: blur(3px);
+}
+
+.vessel::after {
+  /* cap */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -12%;
+  width: 46%;
+  height: 14%;
+  translate: -50% 0;
+  border-radius: 0.45rem 0.45rem 0.15rem 0.15rem;
+  background: linear-gradient(
+    102deg,
+    var(--velvet) 0%,
+    var(--velvet-soft) 32%,
+    rgba(242, 232, 223, 0.5) 52%,
+    var(--velvet) 100%
+  );
+  box-shadow:
+    0 0.5rem 1rem -0.3rem rgba(12, 8, 22, 0.85),
+    0 0 0 1px rgba(242, 232, 223, 0.1) inset;
+}
+
+.vessel__cast {
+  position: absolute;
+  left: 50%;
+  bottom: -12%;
+  width: 150%;
+  height: 12%;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    rgba(12, 8, 22, 0.75) 0%,
+    rgba(12, 8, 22, 0) 70%
+  );
+}
+
+.hours__object {
+  justify-self: center;
+}
+
+/* Which hour you are standing in. Only drawn for the horizontal day. */
+.hours__rail {
+  display: none;
+}
+
+/* Two columns wherever there is room — this part needs no motion. */
+@media (min-width: 62rem) {
+  .hours__panel {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+  }
+
+  .hours__glow {
+    left: 66%;
+  }
+}
+
+/* ---- The horizontal day: wide viewports, motion welcome ---------------- */
+
+@media (min-width: 62rem) and (prefers-reduced-motion: no-preference) {
+  .hours__head {
+    position: absolute;
+    top: clamp(5.5rem, 14vh, 8rem);
+    left: 0;
+    right: 0;
+    z-index: 2;
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  .hours__viewport {
+    height: 100svh;
+    display: flex;
+    align-items: center;
+  }
+
+  .hours__track {
+    display: flex;
+    gap: 0;
+    will-change: transform;
+  }
+
+  .hours__panel {
+    width: 100vw;
+    flex: 0 0 auto;
+  }
+
+  .hours__rail {
+    position: absolute;
+    bottom: clamp(2rem, 6vh, 3.5rem);
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    max-width: var(--shell);
+    margin-inline: auto;
+    padding-inline: var(--pad-x);
+  }
+
+  .hours__rail i {
+    flex: 1;
+    height: 1px;
+    background: rgba(242, 232, 223, 0.18);
+    transition: background-color 0.4s var(--ease-out);
+  }
+
+  .hours__rail i[data-lit="true"] {
+    background: var(--gold);
+  }
+}
+
+/* ==========================================================================
+   Formula — a lens opens over the cross-section
+   ========================================================================== */
+
+.formula {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  overflow: clip;
+}
+
+.formula__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 5rem);
+}
+
+/* The one light surface on the page */
+.formula__stage {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fffaf3 0%, #e4d7cc 70%, #c9b7ab 100%);
+  box-shadow:
+    0 0 0 1px rgba(242, 232, 223, 0.25),
+    0 3rem 6rem -2rem rgba(12, 8, 22, 0.95),
+    0 0 12rem -2rem rgba(255, 244, 220, 0.35);
+  overflow: clip;
+}
+
+.formula__rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.formula__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.5;
+  opacity: 0.55;
+  transition:
+    opacity 0.3s var(--ease-out),
+    stroke-width 0.3s var(--ease-out);
+}
+
+.formula__ring[data-active="true"] {
+  opacity: 1;
+  stroke-width: 1.4;
+}
+
+/* Clipped by the lens: the inside of the formula */
+.formula__core {
+  --lens: 0;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  clip-path: circle(calc(var(--lens, 0) * 50%) at 50% 50%);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(242, 180, 87, 0.25) 0%, rgba(242, 180, 87, 0) 55%),
+    conic-gradient(
+      from 210deg,
+      #2b1b3d 0deg,
+      #3e4ba0 90deg,
+      #d9578c 180deg,
+      #f2b457 260deg,
+      #2b1b3d 360deg
+    );
+  will-change: clip-path;
+}
+
+.formula__coreLabel {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: var(--t-d3);
+  color: rgba(12, 8, 22, 0.72);
+}
+
+.formula__text {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.formula__layers {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(242, 232, 223, 0.14);
+}
+
+.formula__layer {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: baseline;
+  padding-block: 1.05rem;
+  border-bottom: 1px solid rgba(242, 232, 223, 0.14);
+  opacity: 0.4;
+  transition:
+    opacity 0.3s var(--ease-out),
+    padding-left 0.3s var(--ease-out);
+}
+
+.formula__layer:hover {
+  opacity: 1;
+  padding-left: 0.5rem;
+}
+
+.formula__pct {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: var(--t-lead);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.formula__layer h3 {
+  font-size: var(--t-body);
+  font-family: var(--font-archivo), sans-serif;
+  letter-spacing: 0;
+  margin-bottom: 0.2rem;
+}
+
+.formula__layer p {
+  font-size: var(--t-small);
+  color: var(--bone-muted);
+}
+
+@media (max-width: 62rem) {
+  .formula__grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .formula__stage {
+    max-width: 26rem;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Ritual — the one section the visitor drives
+   ========================================================================== */
+
+.ritual {
+  overflow: clip;
+}
+
+.ritual__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+  margin-top: clamp(2.5rem, 7vh, 4rem);
+}
+
+.dial {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.dial__light {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 8%,
+    color-mix(in oklab, var(--tint, var(--gold)) 55%, transparent) 0%,
+    rgba(21, 15, 35, 0) 62%
+  );
+  will-change: transform;
+}
+
+.dial__face {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgba(242, 232, 223, 0.16) inset,
+    0 0 6rem -1rem rgba(12, 8, 22, 0.9) inset;
+}
+
+.dial__marks {
+  position: absolute;
+  inset: 0;
+}
+
+.dial__mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.9rem;
+  height: 3.9rem;
+  margin: -1.95rem 0 0 -1.95rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: var(--t-micro);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone-muted);
+  background: rgba(21, 15, 35, 0.55);
+  box-shadow: 0 0 0 1px rgba(242, 232, 223, 0.14) inset;
+  transition:
+    color 0.3s var(--ease-out),
+    scale 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out),
+    background-color 0.3s var(--ease-out);
+}
+
+.dial__mark:hover {
+  color: var(--bone);
+  scale: 1.07;
+}
+
+.dial__mark[aria-checked="true"] {
+  color: var(--ink);
+  background: var(--gold);
+  scale: 1.12;
+  box-shadow:
+    0 0 0 1px rgba(255, 244, 220, 0.6) inset,
+    0 0 2.5rem rgba(242, 180, 87, 0.55);
+}
+
+.dial__hub {
+  position: relative;
+  width: 36%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: radial-gradient(circle at 42% 34%, var(--velvet-soft), var(--ink-deep) 76%);
+  box-shadow:
+    0 0 0 1px rgba(242, 232, 223, 0.12) inset,
+    0 1.5rem 3rem -1rem rgba(12, 8, 22, 0.9);
+}
+
+.dial__hub b {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: var(--t-d3);
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ritual__panels {
+  position: relative;
+  display: grid;
+}
+
+.ritual__panel {
+  grid-area: 1 / 1;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  align-content: center;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.ritual__panel[data-active="true"] {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.ritual__step {
+  font-size: var(--t-d3);
+}
+
+.ritual__how {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--bone-muted);
+  font-size: var(--t-small);
+}
+
+.ritual__how li {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: 0.5rem;
+}
+
+.ritual__n {
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 62rem) {
+  .ritual__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dial {
+    max-width: 22rem;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .dial__mark {
+    width: 3.2rem;
+    height: 3.2rem;
+    margin: -1.6rem 0 0 -1.6rem;
+  }
+}
+
+/* ==========================================================================
+   Testament
+   ========================================================================== */
+
+.testament {
+  min-height: 80svh;
+  display: grid;
+  align-content: center;
+}
+
+.testament blockquote {
+  margin: 0;
+  max-width: min(92vw, 34rem);
+}
+
+.testament__quote {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.5rem, 1rem + 2.2vw, 3.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.testament__quote .line {
+  display: block;
+}
+
+.testament figcaption {
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+  font-size: var(--t-small);
+  color: var(--bone-muted);
+}
+
+/* ==========================================================================
+   Closing — the light goes down
+   ========================================================================== */
+
+.closing {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  overflow: clip;
+}
+
+.closing__horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(242, 232, 223, 0) 0%,
+    rgba(242, 232, 223, 0.35) 50%,
+    rgba(242, 232, 223, 0) 100%
+  );
+}
+
+/* The sky ends at the horizon, so the light can set behind it. */
+.closing__sky {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 28%;
+  overflow: clip;
+}
+
+.closing__setting {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(70vmin, 30rem);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--gold-pale) 0%,
+    var(--rose) 48%,
+    rgba(58, 30, 79, 0) 72%
+  );
+  will-change: transform;
+}
+
+.closing__inner {
+  position: relative;
+  display: grid;
+  gap: clamp(2rem, 5vh, 3rem);
+  justify-items: center;
+  text-align: center;
+  /* Keeps the form clear of the horizon band and the setting light. */
+  padding-bottom: clamp(8rem, 27vh, 15rem);
+}
+
+.closing__title {
+  font-size: var(--t-d2);
+  max-width: 18ch;
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+  width: min(30rem, 100%);
+}
+
+.form__row {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  border-radius: 999px;
+  background: rgba(12, 8, 22, 0.55);
+  box-shadow: 0 0 0 1px rgba(242, 232, 223, 0.18) inset;
+}
+
+.form__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 1.1rem;
+  border: 0;
+  background: none;
+  color: var(--bone);
+  font: inherit;
+  font-size: var(--t-small);
+}
+
+.form__input::placeholder {
+  color: var(--bone-faint);
+}
+
+.form__input:focus-visible {
+  outline-offset: 0;
+}
+
+.form__status {
+  min-height: 1.4em;
+  font-size: var(--t-micro);
+  color: var(--bone-muted);
+  text-align: left;
+  padding-left: 1.1rem;
+  text-shadow: 0 1px 10px rgba(12, 8, 22, 0.85);
+}
+
+.form__status[data-tone="error"] {
+  color: var(--rose);
+}
+
+.form__status[data-tone="done"] {
+  color: var(--gold);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.footer {
+  position: relative;
+  padding-block: clamp(3rem, 8vh, 5rem) 2rem;
+  border-top: 1px solid rgba(242, 232, 223, 0.12);
+}
+
+.footer__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.footer__mark {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.22em;
+}
+
+.footer__col {
+  display: grid;
+  gap: 0.6rem;
+  font-size: var(--t-small);
+  color: var(--bone-muted);
+}
+
+.footer__col a {
+  transition: color 0.25s var(--ease-out);
+}
+
+.footer__col a:hover {
+  color: var(--bone);
+}
+
+.footer__fine {
+  margin-top: clamp(2.5rem, 7vh, 4rem);
+  font-size: var(--t-micro);
+  color: var(--bone-faint);
+  max-width: 60ch;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .manifesto__statement .word {
+    opacity: 1;
+  }
+
+  .formula__core {
+    --lens: 1;
+  }
+
+  .formula__layer {
+    opacity: 1;
+  }
 }
